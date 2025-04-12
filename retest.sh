@@ -6,7 +6,7 @@ rm package-lock.json
 npm i
 
 cd ../
-rm -rf ~/Work/BrowserBox/client/node-speaker
-cp -r node-speaker ~/Work/BrowserBox/client/
-cd ~/Work/BrowserBox/client
+rm -rf BrowserBox/client/node-speaker
+cp -r node-speaker BrowserBox/client/
+cd BrowserBox/client
 node megaditz.js
