@@ -1,3 +1,13 @@
+# Purpose
+
+This is a fork to fix: https://github.com/advisories/GHSA-w5fc-gj3h-26rx
+and update dependencies. 
+
+So it can be used in [BrowserBox](https://github.com/BrowserBox/BrowserBox)
+
+Original README preserved below:
+---
+
 # node-speaker
 
 ## Output [PCM audio][pcm] data to the speakers
