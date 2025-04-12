@@ -98,7 +98,12 @@ class Speaker extends Writable {
     this.blockAlign = this.bitDepth / 8 * this.channels
 
     // initialize the audio handle
-    // TODO: open async?
+    const chan = parseInt(this.channels || 2);
+    if ( Number.isNaN(chan) ) {
+      this.channels = 2;
+    } else {
+      this.channels = chan;
+    }
     this.audio_handle = binding.open(this.channels, this.sampleRate, format, this.device)
 
     this.emit('open')

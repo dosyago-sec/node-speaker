@@ -39,46 +39,91 @@ void finalize(napi_env env, void* data, void* hint) {
 napi_value speaker_open(napi_env env, napi_callback_info info) {
   size_t argc = 4;
   napi_value args[4];
-  assert(napi_get_cb_info(env, info, &argc, args, NULL, NULL) == napi_ok);
+  if (napi_get_cb_info(env, info, &argc, args, NULL, NULL) != napi_ok || argc < 4) {
+    napi_throw_error(env, "ERR_INVALID_ARGS", "Expected 4 arguments");
+    return NULL;
+  }
 
   Speaker *speaker = malloc(sizeof(Speaker));
+  if (!speaker) {
+    napi_throw_error(env, "ERR_MEMORY", "Failed to allocate speaker memory");
+    return NULL;
+  }
   memset(speaker, 0, sizeof(Speaker));
   audio_output_t *ao = &speaker->ao;
 
-  assert(napi_get_value_int32(env, args[0], &ao->channels) == napi_ok); /* channels */
-  int32_t _rate;
-  assert(napi_get_value_int32(env, args[1], &_rate) == napi_ok); /* sample rate */
-  ao->rate = _rate;
-  assert(napi_get_value_int32(env, args[2], &ao->format) == napi_ok); /* MPG123_ENC_* format */
+  int32_t channels;
+  if (napi_get_value_int32(env, args[0], &channels) != napi_ok || channels <= 0) {
+    free(speaker);
+    napi_throw_error(env, "ERR_INVALID_CHANNELS", "Invalid or missing channels");
+    return NULL;
+  }
+  ao->channels = channels;
+
+  int32_t rate;
+  if (napi_get_value_int32(env, args[1], &rate) != napi_ok || rate <= 0) {
+    free(speaker);
+    napi_throw_error(env, "ERR_INVALID_RATE", "Invalid or missing sample rate");
+    return NULL;
+  }
+  ao->rate = rate;
+
+  int32_t format;
+  if (napi_get_value_int32(env, args[2], &format) != napi_ok) {
+    free(speaker);
+    napi_throw_error(env, "ERR_INVALID_FORMAT", "Invalid or missing format");
+    return NULL;
+  }
+  ao->format = format;
 
   if (is_string(env, args[3])) {
     size_t device_string_size;
-    assert(napi_get_value_string_utf8(env, args[3], NULL, 0, &device_string_size) == napi_ok);
-    speaker->device = malloc(++device_string_size);
-    assert(napi_get_value_string_utf8(env, args[3], speaker->device, device_string_size, NULL) == napi_ok);
-    assert(speaker->device[device_string_size - 1] == 0);
+    if (napi_get_value_string_utf8(env, args[3], NULL, 0, &device_string_size) != napi_ok) {
+      free(speaker);
+      napi_throw_error(env, "ERR_DEVICE_STRING", "Failed to get device string size");
+      return NULL;
+    }
+    speaker->device = malloc(device_string_size + 1);
+    if (!speaker->device) {
+      free(speaker);
+      napi_throw_error(env, "ERR_MEMORY", "Failed to allocate device string memory");
+      return NULL;
+    }
+    if (napi_get_value_string_utf8(env, args[3], speaker->device, device_string_size + 1, NULL) != napi_ok) {
+      free(speaker->device);
+      free(speaker);
+      napi_throw_error(env, "ERR_DEVICE_STRING", "Failed to get device string");
+      return NULL;
+    }
     ao->device = speaker->device;
   }
 
   /* init_output() */
   int r = mpg123_output_module_info.init_output(ao);
-
   if (r != 0) {
+    free(speaker->device);
+    free(speaker);
     napi_throw_error(env, "ERR_OPEN", "Failed to initialize output device");
     return NULL;
   }
 
   /* open() */
   r = ao->open(ao);
-
   if (r != 0) {
+    free(speaker->device);
+    free(speaker);
     napi_throw_error(env, "ERR_OPEN", "Failed to open output device");
     return NULL;
   }
 
   napi_value handle;
-  assert(napi_create_object(env, &handle) == napi_ok);
-  assert(napi_wrap(env, handle, speaker, finalize, NULL, NULL) == napi_ok);
+  if (napi_create_object(env, &handle) != napi_ok ||
+      napi_wrap(env, handle, speaker, finalize, NULL, NULL) != napi_ok) {
+    free(speaker->device);
+    free(speaker);
+    napi_throw_error(env, "ERR_WRAP", "Failed to create speaker handle");
+    return NULL;
+  }
 
   return handle;
 }

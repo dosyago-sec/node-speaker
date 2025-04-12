@@ -1,9 +1,9 @@
 {
   "name": "speaker",
-  "version": "0.5.5",
+  "version": "0.5.6",
   "license": "(MIT AND LGPL-2.1-only)",
   "description": "Output PCM audio data to the speakers",
-  "author": "Nathan Rajlich <nathan@tootallnate.net> (http://tootallnate.net)",
+  "author": "Nathan Rajlich <nathan@tootallnate.net> (http://tootallnate.net), @o0101 and Grok",
   "repository": "TooTallNate/node-speaker",
   "main": "index.js",
   "types": "index.d.ts",
