@@ -1,6 +1,6 @@
 {
   "name": "@browserbox/speaker",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "license": "(MIT AND LGPL-2.1-only)",
   "description": "Output PCM audio data to the speakers",
   "author": "Nathan Rajlich <nathan@tootallnate.net> (http://tootallnate.net), @o0101 and Grok",

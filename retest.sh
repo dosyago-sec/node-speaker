@@ -9,4 +9,4 @@ cd ../
 rm -rf BrowserBox/client/node-speaker
 cp -r node-speaker BrowserBox/client/
 cd BrowserBox/client
-node megaditz.js
+node megaditz-test.js
